@@ -268,6 +268,7 @@ packages:
 =======
     version: "1.17.0"
 >>>>>>> e01e22c8811f4d42cfbcd31deb7c4362fdffc5d9
+
   path:
     dependency: transitive
     description:
@@ -344,7 +345,7 @@ packages:
       sha256: "93167629bfc610f71560ab9312acdda4959de4df6fac7492c89ff0d3886f6636"
       url: "https://pub.dev"
     source: hosted
-<<<<<<< HEAD
+
     version: "0.7.6"
   typed_data:
     dependency: transitive
@@ -354,9 +355,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-=======
-    version: "0.7.9"
->>>>>>> e01e22c8811f4d42cfbcd31deb7c4362fdffc5d9
+  
   vector_math:
     dependency: transitive
     description:
