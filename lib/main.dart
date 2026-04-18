@@ -5,6 +5,13 @@ import 'package:local_service/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const LoginScreen());
+  await Firebase.initializeApp();
+
+  // runApp ke andar MaterialApp lazmi hai
+  runApp(
+    const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: LoginScreen(), // Aapki login screen yahan wrap honi chahiye
+    ),
+  );
 }
