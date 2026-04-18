@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:local_service/login_screen.dart';
+import 'package:local_service/wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +11,7 @@ void main() async {
   runApp(
     const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(), // Aapki login screen yahan wrap honi chahiye
+      home: Wrapper(), // Aapki login screen yahan wrap honi chahiye
     ),
   );
 }

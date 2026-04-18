@@ -15,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  signinwithgoogle() async {
+  Future<void> signinwithgoogle() async {
     final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
 
     final GoogleSignInAuthentication? auth = await googleuser?.authentication;
