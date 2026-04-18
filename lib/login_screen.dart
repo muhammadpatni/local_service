@@ -521,7 +521,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  
+
   final Color primaryBlue = const Color(0xFF0E6BBB);
   final Color whiteColor = Colors.white;
 
