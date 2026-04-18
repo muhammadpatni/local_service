@@ -506,8 +506,14 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_service/phone_auth.dart';
+=======
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:local_service/phone_screen_number.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+>>>>>>> 362beddea64ffc558cf0a2225bc517436c2fa12f
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -520,8 +526,23 @@ class _LoginScreenState extends State<LoginScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
+<<<<<<< HEAD
   final Color primaryBlue = const Color(0xFF0E6BBB);
   final Color whiteColor = Colors.white;
+=======
+  signinwithgoogle() async {
+    final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
+
+    final GoogleSignInAuthentication? auth = await googleuser?.authentication;
+
+    final credentials = GoogleAuthProvider.credential(
+      idToken: auth?.idToken,
+      accessToken: auth?.accessToken,
+    );
+
+    await FirebaseAuth.instance.signInWithCredential(credentials);
+  }
+>>>>>>> 362beddea64ffc558cf0a2225bc517436c2fa12f
 
   @override
   Widget build(BuildContext context) {
@@ -733,7 +754,9 @@ class _LoginScreenState extends State<LoginScreen> {
           width: double.infinity,
           height: 55,
           child: OutlinedButton(
-            onPressed: () {},
+            onPressed: () {
+              signinwithgoogle();
+            },
             style: OutlinedButton.styleFrom(
               backgroundColor: whiteColor,
               side: BorderSide(color: primaryBlue.withOpacity(0.3), width: 1.5),
