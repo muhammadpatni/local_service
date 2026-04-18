@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:local_service/phone_screen_number.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -134,7 +135,12 @@ class _LoginScreenState extends State<LoginScreen> {
           width: double.infinity,
           height: 55,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PhoneScreenNumber()),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFC6FF00),
               foregroundColor: Colors.black,
