@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_service/phone_screen_number.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,6 +14,19 @@ class _LoginScreenState extends State<LoginScreen> {
   // 1. PageController banayein takay dots update ho sakein
   final PageController _pageController = PageController();
   int _currentPage = 0;
+
+  signinwithgoogle() async {
+    final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
+
+    final GoogleSignInAuthentication? auth = await googleuser?.authentication;
+
+    final credentials = GoogleAuthProvider.credential(
+      idToken: auth?.idToken,
+      accessToken: auth?.accessToken,
+    );
+
+    await FirebaseAuth.instance.signInWithCredential(credentials);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +175,9 @@ class _LoginScreenState extends State<LoginScreen> {
           width: double.infinity,
           height: 55,
           child: OutlinedButton(
-            onPressed: () {},
+            onPressed: () {
+              signinwithgoogle();
+            },
             style: OutlinedButton.styleFrom(
               backgroundColor: const Color(0xFFF2F2F2),
               side: BorderSide.none,
