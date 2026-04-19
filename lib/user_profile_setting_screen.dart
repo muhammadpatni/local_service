@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class UserProfileSettingsScreen extends StatefulWidget {
@@ -22,6 +23,14 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
   bool isEmailReadOnly = false;
 
   @override
+  void dispose() {
+    phoneController.removeListener(_phoneListener);
+    phoneController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
 
@@ -30,9 +39,27 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
     if (value != null && value.startsWith("+92")) {
       phoneController.text = value;
       isPhoneReadOnly = true;
-    } else if (value != null) {
+    } else {
+      // 👇 default prefix add
+      phoneController.text = "+92";
+      phoneController.addListener(_phoneListener);
+    }
+
+    if (value != null && !value.startsWith("+92")) {
       emailController.text = value;
       isEmailReadOnly = true;
+    }
+  }
+
+  void _phoneListener() {
+    String text = phoneController.text;
+
+    // agar user +92 delete kare to wapas laga do
+    if (!text.startsWith("+92")) {
+      phoneController.value = TextEditingValue(
+        text: "+92",
+        selection: TextSelection.collapsed(offset: 3),
+      );
     }
   }
 
@@ -207,6 +234,8 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
           child: TextField(
             controller: controller,
             readOnly: readOnly || isDropdown,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
             decoration: InputDecoration(
               hintText: hint,
