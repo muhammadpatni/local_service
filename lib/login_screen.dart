@@ -504,12 +504,249 @@
 //   }
 // }
 
-import 'dart:ui';
+// import 'dart:developer';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:local_service/phone_auth.dart';
+// import 'package:local_service/home_page.dart';
+
+// class LoginScreen extends StatefulWidget {
+//   const LoginScreen({super.key});
+
+//   @override
+//   State<LoginScreen> createState() => _LoginScreenState();
+// }
+
+// class _LoginScreenState extends State<LoginScreen> {
+//   final PageController _pageController = PageController();
+//   int _currentPage = 0;
+
+//   final Color primaryBlue = const Color(0xFF0E6BBB);
+
+//   // --- Logic: Google Sign In ---
+//   Future<void> signinwithgoogle() async {
+//     try {
+//       final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
+//       if (googleuser == null) return; // User ne cancel kar diya
+
+//       final GoogleSignInAuthentication auth = await googleuser.authentication;
+
+//       final credentials = GoogleAuthProvider.credential(
+//         idToken: auth.idToken,
+//         accessToken: auth.accessToken,
+//       );
+
+//       UserCredential userCredential = await FirebaseAuth.instance
+//           .signInWithCredential(credentials);
+
+//       if (userCredential.user != null) {
+//         if (!mounted) return;
+//         Navigator.pushReplacement(
+//           context,
+//           MaterialPageRoute(builder: (context) => const MyHomePage()),
+//         );
+//       }
+//     } catch (e) {
+//       log("Google Sign-In Error: $e");
+//       if (!mounted) return;
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed: $e")));
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final double screenHeight = MediaQuery.of(context).size.height;
+
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+//       body: SafeArea(
+//         child: Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 24.0),
+//           child: Column(
+//             children: [
+//               // 1. Simple Professional Logo
+//               SizedBox(height: screenHeight * 0.05),
+//               Center(
+//                 child: Container(
+//                   height: 110,
+//                   width: 110,
+//                   decoration: const BoxDecoration(
+//                     shape: BoxShape.circle,
+//                     image: DecorationImage(
+//                       image: AssetImage('assets/images/logo.png'),
+//                       fit: BoxFit.contain,
+//                     ),
+//                   ),
+//                 ),
+//               ),
+
+//               SizedBox(height: screenHeight * 0.04),
+
+//               // 2. Illustration PageView (Logic intact)
+//               SizedBox(
+//                 height: screenHeight * 0.28,
+//                 child: PageView(
+//                   controller: _pageController,
+//                   onPageChanged: (int page) {
+//                     setState(() {
+//                       _currentPage = page;
+//                     });
+//                   },
+//                   children: [
+//                     Image.asset(
+//                       'assets/images/image1.jpeg',
+//                       fit: BoxFit.contain,
+//                     ),
+//                     Image.asset(
+//                       'assets/images/image2.jpeg',
+//                       fit: BoxFit.contain,
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               // 3. Dots (Between Image and Text)
+//               const SizedBox(height: 15),
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: List.generate(2, (index) => _buildDot(index)),
+//               ),
+
+//               const SizedBox(height: 25),
+
+//               // 4. Text Content
+//               Text(
+//                 "Your Home Services,\nfair deals",
+//                 textAlign: TextAlign.center,
+//                 style: GoogleFonts.poppins(
+//                   fontSize: 24,
+//                   fontWeight: FontWeight.w700,
+//                   color: const Color(0xFF1A1A1A),
+//                   height: 1.2,
+//                 ),
+//               ),
+//               const SizedBox(height: 10),
+//               Text(
+//                 "Choose experts that are right for you",
+//                 textAlign: TextAlign.center,
+//                 style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54),
+//               ),
+
+//               const Spacer(),
+
+//               // 5. Buttons Logic
+//               Column(
+//                 children: [
+//                   // Phone Auth Logic
+//                   SizedBox(
+//                     width: double.infinity,
+//                     height: 56,
+//                     child: ElevatedButton(
+//                       onPressed: () {
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(
+//                             builder: (context) => const PhoneAuth(),
+//                           ),
+//                         );
+//                       },
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: primaryBlue,
+//                         elevation: 0,
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(16),
+//                         ),
+//                       ),
+//                       child: Text(
+//                         "Continue with phone",
+//                         style: GoogleFonts.poppins(
+//                           color: Colors.white,
+//                           fontSize: 16,
+//                           fontWeight: FontWeight.w600,
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                   const SizedBox(height: 12),
+//                   // Google Sign-In Logic
+//                   SizedBox(
+//                     width: double.infinity,
+//                     height: 56,
+//                     child: OutlinedButton(
+//                       onPressed: () => signinwithgoogle(),
+//                       style: OutlinedButton.styleFrom(
+//                         side: BorderSide(color: Colors.grey[300]!),
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(16),
+//                         ),
+//                       ),
+//                       child: Row(
+//                         mainAxisAlignment: MainAxisAlignment.center,
+//                         children: [
+//                           const Icon(
+//                             Icons.g_mobiledata_rounded,
+//                             color: Colors.black,
+//                             size: 35,
+//                           ),
+//                           const SizedBox(width: 8),
+//                           Text(
+//                             "Continue with Google",
+//                             style: GoogleFonts.poppins(
+//                               color: Colors.black,
+//                               fontSize: 16,
+//                               fontWeight: FontWeight.w600,
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+
+//               const SizedBox(height: 20),
+//               _buildFooterText(),
+//               const SizedBox(height: 10),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildDot(int index) {
+//     return AnimatedContainer(
+//       duration: const Duration(milliseconds: 300),
+//       height: 8,
+//       width: _currentPage == index ? 22 : 8,
+//       margin: const EdgeInsets.only(right: 5),
+//       decoration: BoxDecoration(
+//         borderRadius: BorderRadius.circular(5),
+//         color: _currentPage == index ? primaryBlue : Colors.grey[300],
+//       ),
+//     );
+//   }
+
+//   Widget _buildFooterText() {
+//     return Text(
+//       "Joining our app means you agree with our\nTerms of Use and Privacy Policy",
+//       textAlign: TextAlign.center,
+//       style: GoogleFonts.poppins(color: Colors.black45, fontSize: 11),
+//     );
+//   }
+// }
+
+import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:local_service/phone_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:local_service/phone_auth.dart';
+import 'package:local_service/home_page.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -523,180 +760,198 @@ class _LoginScreenState extends State<LoginScreen> {
   int _currentPage = 0;
 
   final Color primaryBlue = const Color(0xFF0E6BBB);
-  final Color whiteColor = Colors.white;
 
-  signinwithgoogle() async {
-    final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
+  // --- Logic: Google Sign In ---
+  Future<void> signinwithgoogle() async {
+    try {
+      final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
+      if (googleuser == null) return;
 
-    final GoogleSignInAuthentication? auth = await googleuser?.authentication;
+      final GoogleSignInAuthentication auth = await googleuser.authentication;
 
-    final credentials = GoogleAuthProvider.credential(
-      idToken: auth?.idToken,
-      accessToken: auth?.accessToken,
-    );
+      final credentials = GoogleAuthProvider.credential(
+        idToken: auth.idToken,
+        accessToken: auth.accessToken,
+      );
 
-    await FirebaseAuth.instance.signInWithCredential(credentials);
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credentials);
+
+      if (userCredential.user != null) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage()),
+        );
+      }
+    } catch (e) {
+      log("Google Sign-In Error: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed: $e")));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: Colors.white, // Background pure white kar diya
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 40),
-
-                        // 1. Logo Section
-                        _buildGlassLogo(),
-
-                        const SizedBox(height: 30),
-
-                        // 2. PageView for Actual Images
-                        SizedBox(
-                          height: 200, // Image height thori adjust ki hai
-                          child: PageView(
-                            controller: _pageController,
-                            onPageChanged: (int page) {
-                              setState(() {
-                                _currentPage = page;
-                              });
-                            },
-                            children: [
-                              _buildSimpleImage('assets/images/image1.jpeg'),
-                              _buildSimpleImage('assets/images/image2.jpeg'),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        Text(
-                          "Your Home Services, fair deals",
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A1A1A),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Choose experts that are right for you",
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // 3. Dots
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            2,
-                            (index) => _buildDot(index),
-                          ),
-                        ),
-
-                        const Spacer(),
-
-                        // 4. Buttons
-                        _buildButtons(),
-
-                        const SizedBox(height: 20),
-                        _buildFooterText(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  // --- Helper Widgets ---
-
-  // Simple Image Loader (No Border, No Shadow)
-  Widget _buildSimpleImage(String path) {
-    return Container(
-      width: double.infinity,
-      color: Colors.white, // Pure white background
-      child: Image.asset(
-        path,
-        fit: BoxFit.contain, // Image cut nahi hogi
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(Icons.image_outlined, size: 50, color: Colors.grey),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassLogo() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: primaryBlue.withOpacity(0.3),
-            boxShadow: [
-              BoxShadow(
-                color: primaryBlue.withOpacity(0.2),
-                blurRadius: 30,
-                spreadRadius: 10,
-              ),
-            ],
-          ),
-        ),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.2),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.5),
-                  width: 1.5,
-                ),
-              ),
-              child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            children: [
+              // 1. Logo Section (Thora oper aur 130 size)
+              SizedBox(
+                height: screenHeight * 0.03,
+              ), // Gap kam kiya takay logo oper jaye
+              Center(
                 child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
+                  height: 130, // Logo size barha diya
+                  width: 130,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     image: DecorationImage(
                       image: AssetImage('assets/images/logo.png'),
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
               ),
-            ),
+
+              SizedBox(height: screenHeight * 0.03),
+
+              // 2. Illustration PageView
+              SizedBox(
+                height: screenHeight * 0.28,
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (int page) {
+                    setState(() {
+                      _currentPage = page;
+                    });
+                  },
+                  children: [
+                    Image.asset(
+                      'assets/images/image1.jpeg',
+                      fit: BoxFit.contain,
+                    ),
+                    Image.asset(
+                      'assets/images/image2.jpeg',
+                      fit: BoxFit.contain,
+                    ),
+                  ],
+                ),
+              ),
+
+              // 3. Dots
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(2, (index) => _buildDot(index)),
+              ),
+
+              const SizedBox(height: 20),
+
+              // 4. Text Content (Gap barhaya "Choose experts" line ke baad)
+              Text(
+                "Your Home Services,\nfair deals",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A1A),
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 15), // Gap barha diya
+              Text(
+                "Choose experts that are right for you",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54),
+              ),
+
+              // Buttons aur Text ke beech ka bara gap
+              const Spacer(),
+
+              // 5. Buttons Section
+              Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PhoneAuth(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryBlue,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        "Continue with phone",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () => signinwithgoogle(),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey[300]!),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.g_mobiledata_rounded,
+                            color: Colors.black,
+                            size: 35,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Continue with Google",
+                            style: GoogleFonts.poppins(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 25), // Footer se pehle ka gap
+              _buildFooterText(),
+              const SizedBox(height: 10),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -704,93 +959,311 @@ class _LoginScreenState extends State<LoginScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       height: 8,
-      width: _currentPage == index ? 24 : 8,
-      margin: const EdgeInsets.only(right: 6),
+      width: _currentPage == index ? 22 : 8,
+      margin: const EdgeInsets.only(right: 5),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(5),
         color: _currentPage == index ? primaryBlue : Colors.grey[300],
       ),
     );
   }
 
-  Widget _buildButtons() {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          height: 55,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PhoneAuth()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryBlue,
-              foregroundColor: whiteColor,
-              elevation: 0, // Flat premium look
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Text(
-              "Continue with phone",
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          height: 55,
-          child: OutlinedButton(
-            onPressed: () {
-              signinwithgoogle();
-            },
-            style: OutlinedButton.styleFrom(
-              backgroundColor: whiteColor,
-              side: BorderSide(color: primaryBlue.withOpacity(0.3), width: 1.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.g_mobiledata_rounded,
-                  size: 30,
-                  color: Colors.black,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "Continue with Google",
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildFooterText() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        "Joining our app means you agree with our\nTerms of Use and Privacy Policy",
-        textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(color: Colors.black45, fontSize: 12),
-      ),
+    return Text(
+      "Joining our app means you agree with our\nTerms of Use and Privacy Policy",
+      textAlign: TextAlign.center,
+      style: GoogleFonts.poppins(color: Colors.black45, fontSize: 11),
     );
   }
 }
+
+// import 'dart:ui';
+// import 'package:flutter/material.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:local_service/phone_auth.dart';
+// import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+
+// class LoginScreen extends StatefulWidget {
+//   const LoginScreen({super.key});
+
+//   @override
+//   State<LoginScreen> createState() => _LoginScreenState();
+// }
+
+// class _LoginScreenState extends State<LoginScreen> {
+//   final PageController _pageController = PageController();
+//   int _currentPage = 0;
+
+//   final Color primaryBlue = const Color(0xFF0E6BBB);
+//   final Color whiteColor = Colors.white;
+
+//   signinwithgoogle() async {
+//     final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
+
+//     final GoogleSignInAuthentication? auth = await googleuser?.authentication;
+
+//     final credentials = GoogleAuthProvider.credential(
+//       idToken: auth?.idToken,
+//       accessToken: auth?.accessToken,
+//     );
+
+//     await FirebaseAuth.instance.signInWithCredential(credentials);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.white, // Background pure white kar diya
+//       body: SafeArea(
+//         child: LayoutBuilder(
+//           builder: (context, constraints) {
+//             return SingleChildScrollView(
+//               child: ConstrainedBox(
+//                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
+//                 child: IntrinsicHeight(
+//                   child: Padding(
+//                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
+//                     child: Column(
+//                       children: [
+//                         const SizedBox(height: 40),
+
+//                         // 1. Logo Section
+//                         _buildGlassLogo(),
+
+//                         const SizedBox(height: 30),
+
+//                         // 2. PageView for Actual Images
+//                         SizedBox(
+//                           height: 200, // Image height thori adjust ki hai
+//                           child: PageView(
+//                             controller: _pageController,
+//                             onPageChanged: (int page) {
+//                               setState(() {
+//                                 _currentPage = page;
+//                               });
+//                             },
+//                             children: [
+//                               _buildSimpleImage('assets/images/image1.jpeg'),
+//                               _buildSimpleImage('assets/images/image2.jpeg'),
+//                             ],
+//                           ),
+//                         ),
+
+//                         const SizedBox(height: 30),
+
+//                         Text(
+//                           "Your Home Services, fair deals",
+//                           textAlign: TextAlign.center,
+//                           style: GoogleFonts.poppins(
+//                             fontSize: 26,
+//                             fontWeight: FontWeight.w700,
+//                             color: const Color(0xFF1A1A1A),
+//                           ),
+//                         ),
+//                         const SizedBox(height: 10),
+//                         Text(
+//                           "Choose experts that are right for you",
+//                           textAlign: TextAlign.center,
+//                           style: GoogleFonts.poppins(
+//                             fontSize: 16,
+//                             color: Colors.black54,
+//                             fontWeight: FontWeight.w400,
+//                           ),
+//                         ),
+
+//                         const SizedBox(height: 20),
+
+//                         // 3. Dots
+//                         Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: List.generate(
+//                             2,
+//                             (index) => _buildDot(index),
+//                           ),
+//                         ),
+
+//                         const Spacer(),
+
+//                         // 4. Buttons
+//                         _buildButtons(),
+
+//                         const SizedBox(height: 20),
+//                         _buildFooterText(),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             );
+//           },
+//         ),
+//       ),
+//     );
+//   }
+
+//   // --- Helper Widgets ---
+
+//   // Simple Image Loader (No Border, No Shadow)
+//   Widget _buildSimpleImage(String path) {
+//     return Container(
+//       width: double.infinity,
+//       color: Colors.white, // Pure white background
+//       child: Image.asset(
+//         path,
+//         fit: BoxFit.contain, // Image cut nahi hogi
+//         errorBuilder: (context, error, stackTrace) => const Center(
+//           child: Icon(Icons.image_outlined, size: 50, color: Colors.grey),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildGlassLogo() {
+//     return Stack(
+//       alignment: Alignment.center,
+//       children: [
+//         Container(
+//           width: 100,
+//           height: 100,
+//           decoration: BoxDecoration(
+//             shape: BoxShape.circle,
+//             color: primaryBlue.withOpacity(0.3),
+//             boxShadow: [
+//               BoxShadow(
+//                 color: primaryBlue.withOpacity(0.2),
+//                 blurRadius: 30,
+//                 spreadRadius: 10,
+//               ),
+//             ],
+//           ),
+//         ),
+//         ClipRRect(
+//           borderRadius: BorderRadius.circular(100),
+//           child: BackdropFilter(
+//             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+//             child: Container(
+//               width: 140,
+//               height: 140,
+//               decoration: BoxDecoration(
+//                 shape: BoxShape.circle,
+//                 color: Colors.white.withOpacity(0.2),
+//                 border: Border.all(
+//                   color: Colors.white.withOpacity(0.5),
+//                   width: 1.5,
+//                 ),
+//               ),
+//               child: Center(
+//                 child: Container(
+//                   width: 100,
+//                   height: 100,
+//                   decoration: BoxDecoration(
+//                     shape: BoxShape.circle,
+//                     image: DecorationImage(
+//                       image: AssetImage('assets/images/logo.png'),
+//                       fit: BoxFit.cover,
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildDot(int index) {
+//     return AnimatedContainer(
+//       duration: const Duration(milliseconds: 300),
+//       height: 8,
+//       width: _currentPage == index ? 24 : 8,
+//       margin: const EdgeInsets.only(right: 6),
+//       decoration: BoxDecoration(
+//         borderRadius: BorderRadius.circular(8),
+//         color: _currentPage == index ? primaryBlue : Colors.grey[300],
+//       ),
+//     );
+//   }
+
+//   Widget _buildButtons() {
+//     return Column(
+//       children: [
+//         SizedBox(
+//           width: double.infinity,
+//           height: 55,
+//           child: ElevatedButton(
+//             onPressed: () {
+//               Navigator.push(
+//                 context,
+//                 MaterialPageRoute(builder: (context) => const PhoneAuth()),
+//               );
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: primaryBlue,
+//               foregroundColor: whiteColor,
+//               elevation: 0, // Flat premium look
+//               shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(16),
+//               ),
+//             ),
+//             child: Text(
+//               "Continue with phone",
+//               style: GoogleFonts.poppins(
+//                 fontSize: 16,
+//                 fontWeight: FontWeight.w600,
+//               ),
+//             ),
+//           ),
+//         ),
+//         const SizedBox(height: 16),
+//         SizedBox(
+//           width: double.infinity,
+//           height: 55,
+//           child: OutlinedButton(
+//             onPressed: () {
+//               signinwithgoogle();
+//             },
+//             style: OutlinedButton.styleFrom(
+//               backgroundColor: whiteColor,
+//               side: BorderSide(color: primaryBlue.withOpacity(0.3), width: 1.5),
+//               shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(16),
+//               ),
+//             ),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(
+//                   Icons.g_mobiledata_rounded,
+//                   size: 30,
+//                   color: Colors.black,
+//                 ),
+//                 const SizedBox(width: 8),
+//                 Text(
+//                   "Continue with Google",
+//                   style: GoogleFonts.poppins(
+//                     fontSize: 16,
+//                     color: Colors.black,
+//                     fontWeight: FontWeight.w600,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildFooterText() {
+//     return Padding(
+//       padding: const EdgeInsets.only(bottom: 10),
+//       child: Text(
+//         "Joining our app means you agree with our\nTerms of Use and Privacy Policy",
+//         textAlign: TextAlign.center,
+//         style: GoogleFonts.poppins(color: Colors.black45, fontSize: 12),
+//       ),
+//     );
+//   }
+// }
