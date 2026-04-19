@@ -214,8 +214,10 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    OtpScreen(verificationId: verificationId),
+                                builder: (context) => OtpScreen(
+                                  verificationId: verificationId,
+                                  contact: "+92${phoneController.text.trim()}",
+                                ),
                               ),
                             );
                           },

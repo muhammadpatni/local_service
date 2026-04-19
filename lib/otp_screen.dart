@@ -69,14 +69,17 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:local_service/selection_screen.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 import 'package:pinput/pinput.dart';
-import 'package:local_service/home_page.dart';
 
 class OtpScreen extends StatefulWidget {
   final String verificationId;
-  const OtpScreen({super.key, required this.verificationId});
+  final String contact;
+  const OtpScreen({
+    super.key,
+    required this.verificationId,
+    required this.contact,
+  });
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -219,15 +222,11 @@ class _OtpScreenState extends State<OtpScreen> {
       await FirebaseAuth.instance.signInWithCredential(credential).then((
         value,
       ) {
-        // Navigator.pushAndRemoveUntil(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => const MyHomePage()),
-        //   (route) => false,
-        // );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const UserProfileSettingsScreen(),
+            builder: (context) =>
+                UserProfileSettingsScreen(emailnumber: widget.contact),
           ),
         );
       });

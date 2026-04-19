@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class UserProfileSettingsScreen extends StatefulWidget {
-  const UserProfileSettingsScreen({super.key});
+  final String? emailnumber;
+  const UserProfileSettingsScreen({super.key, required this.emailnumber});
 
   @override
   State<UserProfileSettingsScreen> createState() =>
@@ -14,6 +15,26 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
   final Color fieldColor = const Color(
     0xFFF1F4F8,
   ); // Light greyish blue for fields
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+
+  bool isPhoneReadOnly = false;
+  bool isEmailReadOnly = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    String? value = widget.emailnumber;
+
+    if (value != null && value.startsWith("+92")) {
+      phoneController.text = value;
+      isPhoneReadOnly = true;
+    } else if (value != null) {
+      emailController.text = value;
+      isEmailReadOnly = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +118,8 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
                         _buildInputField(
                           label: "Email",
                           hint: "example@mail.com",
+                          controller: emailController,
+                          readOnly: isEmailReadOnly,
                         ),
                         const SizedBox(height: 16),
                         _buildInputField(
@@ -108,7 +131,6 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
                         _buildInputField(
                           label: "Phone number",
                           hint: "92**********99",
-                          isDropdown: true,
                         ),
 
                         // Spacer content ko phailata hai takay button niche jaye
@@ -159,6 +181,8 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
     required String label,
     required String hint,
     bool isDropdown = false,
+    TextEditingController? controller,
+    bool readOnly = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +204,8 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: TextField(
-            readOnly: isDropdown,
+            controller: controller,
+            readOnly: readOnly || isDropdown,
             style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
             decoration: InputDecoration(
               hintText: hint,

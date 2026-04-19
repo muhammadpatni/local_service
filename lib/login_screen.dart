@@ -43,12 +43,12 @@ class _LoginScreenState extends State<LoginScreen> {
         //   context,
         //   MaterialPageRoute(builder: (context) => const MyHomePage()),
         // );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const UserProfileSettingsScreen(),
-          ),
-        );
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => const UserProfileSettingsScreen(emailnumber: ,),
+        //   ),
+        // );
       }
     } catch (e) {
       log("Google Sign-In Error: $e");
