@@ -37,21 +37,23 @@ class _LoginScreenState extends State<LoginScreen> {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithCredential(credentials);
 
-      if (userCredential.user != null) {
+      final user = userCredential.user;
+
+      if (user != null) {
         if (!mounted) return;
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => const MyHomePage()),
-        // );
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => const UserProfileSettingsScreen(emailnumber: ,),
-        //   ),
-        // );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserProfileSettingsScreen(
+              emailnumber: user.email, // 👈 yahan email pass ho rahi hai
+            ),
+          ),
+        );
       }
     } catch (e) {
       log("Google Sign-In Error: $e");
+
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,

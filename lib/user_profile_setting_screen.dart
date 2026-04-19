@@ -125,12 +125,13 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
                         _buildInputField(
                           label: "City",
                           hint: "Karachi",
-                          isDropdown: true,
+                          readOnly: false,
                         ),
-                        const SizedBox(height: 16),
                         _buildInputField(
                           label: "Phone number",
                           hint: "92**********99",
+                          controller: phoneController,
+                          readOnly: isPhoneReadOnly,
                         ),
 
                         // Spacer content ko phailata hai takay button niche jaye
