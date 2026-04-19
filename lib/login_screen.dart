@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_service/phone_auth.dart';
-import 'package:local_service/home_page.dart';
-import 'package:local_service/selection_screen.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 
 class LoginScreen extends StatefulWidget {

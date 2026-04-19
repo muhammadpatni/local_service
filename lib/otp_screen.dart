@@ -211,7 +211,7 @@ class _OtpScreenState extends State<OtpScreen> {
     }
 
     try {
-      PhoneAuthCredential credential = await PhoneAuthProvider.credential(
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: widget.verificationId,
         smsCode: pin,
       );

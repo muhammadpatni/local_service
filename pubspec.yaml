@@ -41,6 +41,10 @@ dependencies:
   provider: ^6.1.5+1
   pinput: ^6.0.2
   google_fonts: ^8.0.2
+  url_launcher: ^6.3.2
+  google_maps_flutter: ^2.17.0
+  geocoding: ^4.0.0
+  cloud_firestore: ^6.3.0
 
 dev_dependencies:
   flutter_test:
