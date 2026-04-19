@@ -159,6 +159,7 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
                           hint: "92**********99",
                           controller: phoneController,
                           readOnly: isPhoneReadOnly,
+                          isPhone: true,
                         ),
 
                         // Spacer content ko phailata hai takay button niche jaye
@@ -209,6 +210,7 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
     required String label,
     required String hint,
     bool isDropdown = false,
+    bool isPhone = false,
     TextEditingController? controller,
     bool readOnly = false,
   }) {
@@ -234,8 +236,13 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
           child: TextField(
             controller: controller,
             readOnly: readOnly || isDropdown,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+
+            keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
+
+            inputFormatters: isPhone
+                ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9+]'))]
+                : [],
+
             style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
             decoration: InputDecoration(
               hintText: hint,
