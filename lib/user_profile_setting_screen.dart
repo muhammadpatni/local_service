@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:local_service/home_page.dart';
 
 class UserProfileSettingsScreen extends StatefulWidget {
   final String? emailnumber;
@@ -173,7 +174,12 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
                             height: 56,
                             child: ElevatedButton(
                               onPressed: () {
-                                // Next logic
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const MyHomePage(),
+                                  ),
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryBlue,
