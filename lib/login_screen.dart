@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_service/phone_auth.dart';
 import 'package:local_service/home_page.dart';
+import 'package:local_service/selection_screen.dart';
+import 'package:local_service/user_profile_setting_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -37,9 +39,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userCredential.user != null) {
         if (!mounted) return;
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const MyHomePage()),
+        // );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MyHomePage()),
+          MaterialPageRoute(
+            builder: (context) => const UserProfileSettingsScreen(),
+          ),
         );
       }
     } catch (e) {
