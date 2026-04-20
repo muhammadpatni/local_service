@@ -70,7 +70,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_service/selection_screen.dart';
-import 'package:local_service/user_profile_setting_screen.dart';
 import 'package:pinput/pinput.dart';
 
 class OtpScreen extends StatefulWidget {

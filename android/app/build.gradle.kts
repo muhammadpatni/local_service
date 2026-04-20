@@ -12,8 +12,6 @@ android {
     namespace = "com.example.local_service"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
-    ndkVersion = "25.1.8937393"
-    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
