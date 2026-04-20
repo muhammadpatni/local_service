@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:local_service/home_page.dart';
+import 'package:local_service/user_profile_setting_screen.dart';
 
 class SelectionScreen extends StatefulWidget {
-  const SelectionScreen({super.key});
+  final String emailcontact;
+  const SelectionScreen({super.key, required this.emailcontact});
 
   @override
   State<SelectionScreen> createState() => _SelectionScreenState();
@@ -95,7 +96,10 @@ class _SelectionScreenState extends State<SelectionScreen> {
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const MyHomePage(),
+                                      builder: (context) =>
+                                          UserProfileSettingsScreen(
+                                            emailnumber: widget.emailcontact,
+                                          ),
                                     ),
                                   );
                                 },

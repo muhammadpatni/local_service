@@ -69,6 +69,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:local_service/selection_screen.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 import 'package:pinput/pinput.dart';
 
@@ -178,7 +179,9 @@ class _OtpScreenState extends State<OtpScreen> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () => _verifyOtp(otpController.text),
+                    onPressed: () {
+                      _verifyOtp(otpController.text);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryBlue,
                       foregroundColor: Colors.white,
@@ -225,8 +228,7 @@ class _OtpScreenState extends State<OtpScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                UserProfileSettingsScreen(emailnumber: widget.contact),
+            builder: (context) => SelectionScreen(emailcontact: widget.contact),
           ),
         );
       });
