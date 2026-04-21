@@ -1,7 +1,37 @@
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:local_service/login_screen.dart';
+// import 'package:local_service/home_page.dart';
+
+// class Wrapper extends StatefulWidget {
+//   const Wrapper({super.key});
+
+//   @override
+//   State<Wrapper> createState() => _WrapperState();
+// }
+
+// class _WrapperState extends State<Wrapper> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return StreamBuilder(
+//       stream: FirebaseAuth.instance.authStateChanges(),
+//       builder: (context, snapshot) {
+//         if (snapshot.hasData) {
+//           return MyHomePage();
+//         } else {
+//           return LoginScreen();
+//         }
+//       },
+//     );
+//   }
+// }
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:local_service/login_screen.dart';
 import 'package:local_service/home_page.dart';
+import 'package:local_service/selection_screen.dart';
 
 class Wrapper extends StatefulWidget {
   const Wrapper({super.key});
@@ -11,15 +41,52 @@ class Wrapper extends StatefulWidget {
 }
 
 class _WrapperState extends State<Wrapper> {
+  final Color primaryBlue = const Color(0xFF0E6BBB);
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return MyHomePage();
+        // Checking authentication state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator(color: primaryBlue)),
+          );
+        }
+
+        if (snapshot.hasData && snapshot.data != null) {
+          User user = snapshot.data!;
+
+          // Agar user auth mein hai, toh Firestore check karo
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get(),
+            builder: (context, fsSnapshot) {
+              if (fsSnapshot.connectionState == ConnectionState.waiting) {
+                return Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(color: primaryBlue),
+                  ),
+                );
+              }
+
+              // Agar Firestore mein data exist karta hai -> Home Page
+              if (fsSnapshot.hasData && fsSnapshot.data!.exists) {
+                return const MyHomePage();
+              } else {
+                // Agar data nahi hai -> Selection Screen
+                return SelectionScreen(
+                  emailcontact: user.email ?? user.phoneNumber ?? '',
+                );
+              }
+            },
+          );
         } else {
-          return LoginScreen();
+          // Agar user logged in nahi hai -> Login Screen
+          return const LoginScreen();
         }
       },
     );
