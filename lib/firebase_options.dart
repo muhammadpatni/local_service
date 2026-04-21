@@ -1,12 +1,3 @@
-// ⚠️  YEH FILE AUTO-GENERATE HOGI
-// Terminal mein yeh command chalao:
-//   dart pub global activate flutterfire_cli
-//   flutterfire configure
-//
-// Woh command automatically yeh file generate karega
-// aur apne Firebase project ki values daal dega.
-// Tab tak neeche placeholder hai taake project compile ho sake.
-
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
