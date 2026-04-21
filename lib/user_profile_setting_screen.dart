@@ -1667,6 +1667,12 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
               // Warna jo FirebaseAuth mein email hai wo dikhao
               emailController.text = user.email ?? '';
             }
+            if (data['phone'] != null && data['phone'] != "") {
+              phoneController.text = data['phone'];
+            } else {
+              // Warna jo FirebaseAuth mein phone hai wo dikhao
+              phoneController.text = user.phoneNumber ?? '';
+            }
             _networkImageUrl = data['profileImage']; // Purani pic ka URL
           });
         }
