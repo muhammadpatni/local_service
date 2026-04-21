@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_service/login_screen.dart';
 import 'package:local_service/safety_page.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
@@ -56,7 +57,6 @@ class UserDrawer extends StatelessWidget {
                   _buildMenuItem(Icons.settings_outlined, "Settings", () {
                     Navigator.pop(context);
 
-                    // 2. Phir Safety screen par jayein takay back option kaam kare
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -67,20 +67,28 @@ class UserDrawer extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  _buildMenuItem(Icons.logout, "Logout", () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                      (route) => false,
-                    );
+                  // --- LOGOUT BUTTON UPDATED ---
+                  _buildMenuItem(Icons.logout, "Logout", () async {
+                    // Firebase se sign out karein
+                    await FirebaseAuth.instance.signOut();
+                    await GoogleSignIn().signOut();
+
+                    // context.mounted check karna zaroori hai async ke baad
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    }
                   }, isLogout: true),
                 ],
               ),
             ),
 
-            // --- 4. BOTTOM SECTION (Updated based on image_5.png) ---
+            // --- 4. BOTTOM SECTION ---
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
@@ -107,10 +115,9 @@ class UserDrawer extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Colors.transparent, // background container se lenge
+                        backgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,
-                        elevation: 0, // original shadow
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -340,16 +347,12 @@ class UserDrawer extends StatelessWidget {
     );
   }
 
-  // Reusable Social Icon with specific circular border from image
   Widget _socialIcon(IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.grey[300]!,
-          width: 1.5,
-        ), // sleek border
+        border: Border.all(color: Colors.grey[300]!, width: 1.5),
       ),
       child: Icon(icon, color: Colors.grey[700], size: 24),
     );
