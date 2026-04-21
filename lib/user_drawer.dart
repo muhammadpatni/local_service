@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_service/login_screen.dart';
 import 'package:local_service/safety_page.dart';
+import 'package:local_service/user_profile_setting_screen.dart';
 import 'package:local_service/user_setting_page.dart';
 
 class UserDrawer extends StatelessWidget {
@@ -17,7 +20,7 @@ class UserDrawer extends StatelessWidget {
         child: Column(
           children: [
             // 1. Header Section (Clean Profile)
-            _buildHeader(),
+            _buildHeader(context),
 
             // 2. Sleek Divider
             Divider(
@@ -155,52 +158,150 @@ class UserDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
-    return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: primaryBlue, width: 2),
+  // Widget _buildHeader(BuildContext context) {
+  //   return InkWell(
+  //     onTap: () {
+  //       // Drawer band karein
+  //       Navigator.pop(context);
+
+  //       // Profile Settings Screen open karein Edit Mode ke saath
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (context) => const UserProfileSettingsScreen(
+  //             emailnumber: null,
+  //             isEditMode: true, // Yahan true pass karna zaroori hai
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(20.0),
+  //       child: Row(
+  //         children: [
+  //           Container(
+  //             padding: const EdgeInsets.all(2),
+  //             decoration: BoxDecoration(
+  //               shape: BoxShape.circle,
+  //               border: Border.all(color: primaryBlue, width: 2),
+  //             ),
+  //             child: CircleAvatar(
+  //               radius: 28,
+  //               backgroundColor: primaryBlue.withOpacity(0.1),
+  //               child: Icon(Icons.person, size: 30, color: primaryBlue),
+  //             ),
+  //           ),
+  //           const SizedBox(width: 15),
+  //           Expanded(
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   "Ahmed Raza",
+  //                   style: GoogleFonts.poppins(
+  //                     fontSize: 17,
+  //                     fontWeight: FontWeight.w700,
+  //                     color: Colors.black87,
+  //                   ),
+  //                 ),
+  //                 Text(
+  //                   "View Profile",
+  //                   style: GoogleFonts.poppins(
+  //                     fontSize: 13,
+  //                     color: Colors.black45,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Icon(Icons.chevron_right, color: Colors.grey[400]),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Widget _buildHeader(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        String name = "Guest User";
+        String? imageUrl;
+
+        if (snapshot.hasData && snapshot.data!.exists) {
+          var data = snapshot.data!.data() as Map<String, dynamic>;
+          name = data['name'] ?? "No Name";
+          imageUrl = data['profileImage'];
+        }
+
+        return InkWell(
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UserProfileSettingsScreen(
+                  emailnumber: user?.email ?? user?.phoneNumber,
+                  isEditMode: true,
+                ),
               ),
-              child: CircleAvatar(
-                radius: 28,
-                backgroundColor: primaryBlue.withOpacity(0.1),
-                child: Icon(Icons.person, size: 30, color: primaryBlue),
-              ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Ahmed Raza",
-                    style: GoogleFonts.poppins(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: primaryBlue, width: 2),
                   ),
-                  Text(
-                    "View Profile",
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.black45,
-                    ),
+                  child: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: primaryBlue.withOpacity(0.1),
+                    backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
+                        ? NetworkImage(imageUrl)
+                        : null,
+                    child: (imageUrl == null || imageUrl.isEmpty)
+                        ? Icon(Icons.person, size: 30, color: primaryBlue)
+                        : null,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        "View Profile",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.black45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: Colors.grey[400]),
+              ],
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
