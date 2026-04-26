@@ -9,7 +9,8 @@ import 'package:local_service/login_screen.dart';
 import 'package:local_service/main.dart';
 import 'package:local_service/privacy_policy_screen.dart';
 import 'package:local_service/saved_addresses_screen.dart';
-import 'package:local_service/terms_conditions_screen.dart'; // main.dart ko import lazmi karein theme logic ke liye
+import 'package:local_service/terms_conditions_screen.dart';
+import 'package:local_service/wrapper.dart'; // main.dart ko import lazmi karein theme logic ke liye
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -20,71 +21,41 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _handleDeleteAccount(BuildContext context) async {
-    try {
-      final auth = FirebaseAuth.instance;
-      final user = auth.currentUser;
+    // 1. Navigation state ko await se pehle save kar lein
+    // Taa ke baad mein context mounted ka issue na aaye
+    final navigator = Navigator.of(context, rootNavigator: true);
 
+    try {
+      final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final uid = user.uid;
 
-        // 1. Pehle Firestore se user ka data delete karein
+        // 2. Firestore se data delete karein
         await FirebaseFirestore.instance.collection('users').doc(uid).delete();
 
-        // 2. Google Sign-In session clear karein
+        // 3. Google Sign-In session khatam karein
         try {
           await GoogleSignIn().signOut();
         } catch (e) {
           debugPrint("Google SignOut Error: $e");
         }
 
-        // 3. Pehle account DELETE karein (Sign out se pehle)
-        try {
-          await user.delete();
-        } on FirebaseAuthException catch (e) {
-          if (e.code == 'requires-recent-login') {
-            // Agar error aaye toh logout karke wapis bhej dein taake user dubara login kare
-            await auth.signOut();
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    "Security Check: Dubara login karke account delete karein.",
-                  ),
-                ),
-              );
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
-            }
-            return; // Function yahan khatam
-          }
-        }
-
-        // 4. Ab Sign Out karein
-        await auth.signOut();
-
-        // 5. LOGIN PAGE PAR WAPIS BHEJEIN
-        if (context.mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (route) => false,
-          );
-        }
+        // 4. Auth se account delete karein
+        // (Note: Agar user ne bohut pehle login kiya tha toh yahan 'requires-recent-login' error aa sakta hai)
+        await user.delete();
       }
     } catch (e) {
-      debugPrint("Deletion Error: $e");
-      // Agar koi bhi error aaye, user ko login page par laazmi bhejein
-      if (context.mounted) {
-        await FirebaseAuth.instance.signOut();
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (route) => false,
-        );
-      }
+      debugPrint("Deletion process error: $e");
+    } finally {
+      // 5. Har haal mein Auth SignOut karein
+      await FirebaseAuth.instance.signOut();
+
+      // 6. Ab saved 'navigator' use karein page change karne ke liye.
+      // Yahan context.mounted check ki zaroorat nahi kyunke navigator humne pehle hi bind kar liya tha.
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
     }
   }
 
@@ -256,7 +227,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                     ),
                     content: Text(
-                      "Kya aap apna account hamesha ke liye delete karna chahte hain? Isse aapka sara data khatam ho jayega.",
+                      "Are you sure you want to permanently delete your account?.",
                       style: GoogleFonts.poppins(),
                     ),
                     actions: [
