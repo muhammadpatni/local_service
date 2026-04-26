@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:local_service/ProviderProfileSettingsScreen.dart';
 import 'package:local_service/login_screen.dart';
 import 'package:local_service/safety_page.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
@@ -106,14 +107,30 @@ class UserDrawer extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryBlue.withOpacity(0.3),
+                          color: primaryBlue.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 5), // shadow direction
                         ),
                       ],
                     ),
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        final user = FirebaseAuth.instance.currentUser;
+                        // Agar email hai toh wo, warna number uthayega
+                        String userData =
+                            user?.email ?? user?.phoneNumber ?? '';
+
+                        Navigator.pop(context); // Drawer band karein
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Providerprofilesettingsscreen(
+                              emailnumber:
+                                  userData, // Yeh Provider screen mein auto-fill karega
+                            ),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,

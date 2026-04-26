@@ -43,6 +43,11 @@ class _ProviderprofilesettingsscreenState
     "Quetta",
     "Gujranwala",
     "Sialkot",
+    "Sakkur",
+    "Bhawalpur",
+    "Rawalpindi",
+    "Hyderabad",
+    "Quetta",
   ];
 
   String? _networkImageUrl;
