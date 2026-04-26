@@ -96,13 +96,16 @@ class SavedAddressesScreen extends StatelessWidget {
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(15),
         leading: CircleAvatar(
-          backgroundColor: primaryBlue.withOpacity(0.1),
+          backgroundColor: primaryBlue.withValues(alpha: 0.1),
           child: Icon(Icons.location_on, color: primaryBlue),
         ),
         title: Text(

@@ -81,7 +81,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: primaryBlue.withOpacity(0.05),
+                color: primaryBlue.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(

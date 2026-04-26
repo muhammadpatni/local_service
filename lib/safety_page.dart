@@ -61,9 +61,9 @@ class SafetyScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.05),
+                color: Colors.red.withValues(alpha: .05),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.red.withOpacity(0.1)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.1)),
               ),
               child: Row(
                 children: [
@@ -138,7 +138,7 @@ class SafetyScreen extends StatelessWidget {
                 "Noraya Local Services: Trusted & Secure",
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  color: primaryBlue.withOpacity(0.6),
+                  color: primaryBlue.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),

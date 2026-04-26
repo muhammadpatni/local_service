@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:local_service/ProviderProfileSettingsScreen.dart';
 import 'package:local_service/login_screen.dart';
+import 'package:local_service/provider_profile_setting_screen.dart';
 import 'package:local_service/safety_page.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 import 'package:local_service/user_setting_page.dart';
@@ -116,17 +116,16 @@ class UserDrawer extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         final user = FirebaseAuth.instance.currentUser;
-                        // Agar email hai toh wo, warna number uthayega
                         String userData =
                             user?.email ?? user?.phoneNumber ?? '';
 
-                        Navigator.pop(context); // Drawer band karein
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Providerprofilesettingsscreen(
-                              emailnumber:
-                                  userData, // Yeh Provider screen mein auto-fill karega
+                            builder: (context) => ProviderProfileSettingsScreen(
+                              emailnumber: userData,
+                              isSwitching: true, // <--- YAHAN TRUE PASS KAREIN
                             ),
                           ),
                         );
@@ -288,7 +287,7 @@ class UserDrawer extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     radius: 28,
-                    backgroundColor: primaryBlue.withOpacity(0.1),
+                    backgroundColor: primaryBlue.withValues(alpha: 0.1),
                     backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
                         ? NetworkImage(imageUrl)
                         : null,
@@ -338,7 +337,9 @@ class UserDrawer extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isLogout ? Colors.red.withOpacity(0.08) : Colors.transparent,
+        color: isLogout
+            ? Colors.red.withValues(alpha: 0.08)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(

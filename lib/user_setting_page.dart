@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -10,7 +9,6 @@ import 'package:local_service/main.dart';
 import 'package:local_service/privacy_policy_screen.dart';
 import 'package:local_service/saved_addresses_screen.dart';
 import 'package:local_service/terms_conditions_screen.dart';
-import 'package:local_service/wrapper.dart'; // main.dart ko import lazmi karein theme logic ke liye
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -197,7 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -267,7 +265,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: primaryBlue.withOpacity(0.5),
+                    color: primaryBlue.withValues(alpha: 0.5),
                   ),
                 ),
                 Text(
@@ -311,7 +309,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: primaryBlue.withOpacity(0.1),
+          color: primaryBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: primaryBlue, size: 22),
@@ -346,7 +344,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: primaryBlue.withOpacity(0.1),
+          color: primaryBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: primaryBlue, size: 22),
