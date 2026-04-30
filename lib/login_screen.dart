@@ -292,19 +292,18 @@ class _LoginScreenState extends State<LoginScreen> {
   // --- Logic: Google Sign In ---
   Future<void> signinwithgoogle() async {
     setState(() => _isLoading = true);
+
     try {
-      final GoogleSignInAccount? googleuser = await GoogleSignIn().signIn();
-      if (googleuser == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
+      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
 
-      final GoogleSignInAuthentication auth = await googleuser.authentication;
+      // 🔥 initialize (important in v7)
+      await googleSignIn.initialize();
 
-      final credentials = GoogleAuthProvider.credential(
-        idToken: auth.idToken,
-        accessToken: auth.accessToken,
-      );
+      final GoogleSignInAccount googleUser = await googleSignIn.authenticate();
+
+      final GoogleSignInAuthentication auth = await googleUser.authentication;
+
+      final credentials = GoogleAuthProvider.credential(idToken: auth.idToken);
 
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithCredential(credentials);
@@ -312,7 +311,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final user = userCredential.user;
 
       if (user != null) {
-        // Firestore mein check karein ke profile bani hui hai ya nahi
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -321,18 +319,16 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
 
         if (userDoc.exists) {
-          // Profile exist karti hai -> Home Page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const MyHomePage()),
           );
         } else {
-          // Profile nahi hai -> Selection Screen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  SelectionScreen(emailcontact: user.email.toString()),
+                  SelectionScreen(emailcontact: user.email ?? ""),
             ),
           );
         }
@@ -343,7 +339,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed: $e")));
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed")));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

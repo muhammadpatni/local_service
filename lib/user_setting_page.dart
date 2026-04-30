@@ -33,7 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         // 3. Google Sign-In session khatam karein
         try {
-          await GoogleSignIn().signOut();
+          await GoogleSignIn.instance.signOut();
         } catch (e) {
           debugPrint("Google SignOut Error: $e");
         }

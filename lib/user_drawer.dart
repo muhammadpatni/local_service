@@ -72,7 +72,7 @@ class UserDrawer extends StatelessWidget {
                   _buildMenuItem(Icons.logout, "Logout", () async {
                     // Firebase se sign out karein
                     await FirebaseAuth.instance.signOut();
-                    await GoogleSignIn().signOut();
+                    await GoogleSignIn.instance.signOut();
 
                     // context.mounted check karna zaroori hai async ke baad
                     if (context.mounted) {
