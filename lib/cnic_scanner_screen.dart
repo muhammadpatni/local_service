@@ -327,16 +327,24 @@ class CnicScannerScreen extends StatefulWidget {
   State<CnicScannerScreen> createState() => _CnicScannerScreenState();
 }
 
-class _CnicScannerScreenState extends State<CnicScannerScreen> {
+class _CnicScannerScreenState extends State<CnicScannerScreen>
+    with SingleTickerProviderStateMixin {
   CameraController? _controller;
   bool _isBusy = false;
   bool _isCardDetected = false;
   bool _isCapturing = false;
+  int _stableFrameCount = 0; // Stability counter - 3 consecutive frames needed
+  final int _requiredStableFrames = 3;
+  late AnimationController _pulseController;
   final TextRecognizer _textRecognizer = TextRecognizer();
 
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
     _initializeCamera();
   }
 
@@ -354,8 +362,8 @@ class _CnicScannerScreenState extends State<CnicScannerScreen> {
       await _controller!.initialize();
       if (!mounted) return;
       setState(() {});
-      // Thoda delay de kar stream shuru karo taake camera stabilize ho jaye
-      await Future.delayed(const Duration(milliseconds: 500));
+
+      await Future.delayed(const Duration(milliseconds: 600));
       if (mounted && _controller != null && _controller!.value.isInitialized) {
         _controller!.startImageStream(_processCameraImage);
       }
@@ -380,41 +388,54 @@ class _CnicScannerScreenState extends State<CnicScannerScreen> {
         metadata: InputImageMetadata(
           size: Size(image.width.toDouble(), image.height.toDouble()),
           rotation: InputImageRotation.rotation90deg,
-          format:
-              InputImageFormatValue.fromRawValue(image.format.raw) ??
+          format: InputImageFormatValue.fromRawValue(image.format.raw) ??
               InputImageFormat.nv21,
           bytesPerRow: image.planes[0].bytesPerRow,
         ),
       );
 
-      final RecognizedText recognizedText = await _textRecognizer.processImage(
-        inputImage,
-      );
+      final RecognizedText recognizedText =
+          await _textRecognizer.processImage(inputImage);
       String text = recognizedText.text.toUpperCase();
 
-      // CNIC Validation: multiple keywords check
+      // Pakistani NIC keyword matching
       bool hasPakistan = text.contains("PAKISTAN");
-      bool hasIdentity = text.contains("IDENTITY") || text.contains("IDENTIT");
-      bool hasGovt = text.contains("GOVERNMENT") || text.contains("GOVT");
       bool hasNadra = text.contains("NADRA");
-      bool hasCnic =
-          text.contains("CNIC") ||
+      bool hasNIC =
           text.contains("NATIONAL") ||
-          text.contains("CITIZEN");
+          text.contains("IDENTITY") ||
+          text.contains("IDENTIT");
+      bool hasGovt = text.contains("GOVERNMENT") || text.contains("GOVT");
+      bool hasCnic = text.contains("CNIC") || text.contains("CITIZEN");
+      // CNIC number pattern: 5 digits - 7 digits - 1 digit
+      bool hasCnicNumber = RegExp(r'\d{5}-\d{7}-\d').hasMatch(text) ||
+          RegExp(r'\d{13}').hasMatch(text);
+      bool hasIslamicRepublic = text.contains("ISLAMIC");
 
-      // Kam se kam 2 keywords milein taake false positive na ho
       int matchCount = 0;
       if (hasPakistan) matchCount++;
-      if (hasIdentity) matchCount++;
-      if (hasGovt) matchCount++;
       if (hasNadra) matchCount++;
+      if (hasNIC) matchCount++;
+      if (hasGovt) matchCount++;
       if (hasCnic) matchCount++;
+      if (hasCnicNumber) matchCount += 2; // CNIC number = strong signal
+      if (hasIslamicRepublic) matchCount++;
 
-      if (matchCount >= 1 && !_isCardDetected && !_isCapturing) {
-        if (mounted) {
-          setState(() => _isCardDetected = true);
+      if (matchCount >= 2 && !_isCapturing) {
+        _stableFrameCount++;
+
+        if (_stableFrameCount >= _requiredStableFrames && !_isCardDetected) {
+          if (mounted) setState(() => _isCardDetected = true);
+          await _captureImage();
+        } else if (mounted && !_isCardDetected) {
+          setState(() {}); // Refresh for progress
         }
-        await _captureImage();
+      } else {
+        // Reset if card leaves frame
+        if (_stableFrameCount > 0 && !_isCardDetected) {
+          _stableFrameCount = 0;
+          if (mounted) setState(() {});
+        }
       }
     } catch (e) {
       debugPrint("Scanner Error: $e");
@@ -428,13 +449,10 @@ class _CnicScannerScreenState extends State<CnicScannerScreen> {
     _isCapturing = true;
 
     try {
-      // Stream band karo pehle
       if (_controller != null && _controller!.value.isStreamingImages) {
         await _controller!.stopImageStream();
       }
-
-      // Camera ko focus karne ka waqt do
-      await Future.delayed(const Duration(milliseconds: 800));
+      await Future.delayed(const Duration(milliseconds: 700));
 
       if (_controller == null || !_controller!.value.isInitialized) {
         _isCapturing = false;
@@ -442,28 +460,29 @@ class _CnicScannerScreenState extends State<CnicScannerScreen> {
       }
 
       final XFile file = await _controller!.takePicture();
-
-      if (mounted) {
-        Navigator.pop(context, File(file.path));
-      }
+      if (mounted) Navigator.pop(context, File(file.path));
     } catch (e) {
       debugPrint("Capture Error: $e");
       _isCapturing = false;
-      if (mounted) {
-        setState(() => _isCardDetected = false);
-      }
+      _isCardDetected = false;
+      _stableFrameCount = 0;
       _initializeCamera();
     }
   }
 
-  // Manual capture button ke liye
   void _manualCapture() async {
     if (_isCapturing) return;
-    if (mounted) {
-      setState(() => _isCardDetected = true);
-    }
+    if (mounted) setState(() => _isCardDetected = true);
     await _captureImage();
   }
+
+  // Pakistani NIC frame dimensions ratio: 85.6mm × 54mm = 1.585:1
+  double get _frameWidth {
+    final sw = MediaQuery.of(context).size.width;
+    return sw * 0.88; // 88% of screen width
+  }
+
+  double get _frameHeight => _frameWidth / 1.585; // Exact NIC ratio
 
   @override
   Widget build(BuildContext context) {
@@ -473,89 +492,166 @@ class _CnicScannerScreenState extends State<CnicScannerScreen> {
         body: Center(child: CircularProgressIndicator(color: Colors.white)),
       );
     }
+
+    final Color borderColor = _isCardDetected
+        ? Colors.green
+        : _stableFrameCount > 0
+        ? Colors.yellow
+        : Colors.white;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Full screen camera preview
+          // Full screen camera
           Positioned.fill(child: CameraPreview(_controller!)),
 
-          // Dark overlay except center frame
-          Positioned.fill(child: CustomPaint(painter: _OverlayPainter())),
-
-          // CNIC Frame
-          Center(
-            child: Container(
-              width: 320,
-              height: 210,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _isCardDetected ? Colors.green : Colors.white,
-                  width: 3,
-                ),
-                borderRadius: BorderRadius.circular(16),
+          // Dark overlay with transparent NIC-shaped hole
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _NicOverlayPainter(
+                frameWidth: _frameWidth,
+                frameHeight: _frameHeight,
               ),
             ),
           ),
+
+          // Corner bracket frame (like NADRA/EasyPaisa)
+          Center(
+            child: SizedBox(
+              width: _frameWidth,
+              height: _frameHeight,
+              child: CustomPaint(
+                painter: _CornerBracketPainter(color: borderColor),
+              ),
+            ),
+          ),
+
+          // Scan line animation when detecting
+          if (!_isCardDetected && _stableFrameCount == 0)
+            Center(
+              child: SizedBox(
+                width: _frameWidth,
+                height: _frameHeight,
+                child: AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    return Align(
+                      alignment: Alignment(
+                        0,
+                        -1 + 2 * _pulseController.value,
+                      ),
+                      child: Container(
+                        height: 2,
+                        width: _frameWidth,
+                        color: Colors.green.withOpacity(0.7),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
 
           // Top instruction
           Positioned(
-            top: 60,
+            top: MediaQuery.of(context).padding.top + 16,
             left: 20,
             right: 20,
-            child: Text(
-              "Align CNIC ${widget.side.toUpperCase()} within the frame",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              children: [
+                Text(
+                  "CNIC ${widget.side.toUpperCase()} Side",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Frame mein card rakhein - auto detect hoga",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
 
+          // Stability progress dots
+          if (!_isCardDetected && _stableFrameCount > 0)
+            Center(
+              child: Transform.translate(
+                offset: Offset(0, _frameHeight / 2 + 20),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_requiredStableFrames, (i) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: i < _stableFrameCount
+                            ? Colors.yellow
+                            : Colors.white30,
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+
           // Bottom status + manual button
           Positioned(
-            bottom: 60,
+            bottom: 40,
             left: 20,
             right: 20,
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.black.withOpacity(0.65),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     _isCapturing
-                        ? "Processing..."
+                        ? "📸 Processing..."
                         : _isCardDetected
-                        ? "Card Detected! Auto Capturing..."
-                        : "Scanning for CNIC...",
+                        ? "✅ Card Detected! Capturing..."
+                        : _stableFrameCount > 0
+                        ? "🔍 Card mil raha hai..."
+                        : "📋 CNIC ko frame mein rakhein",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
-                      color: Colors.white,
+                      color: _isCardDetected ? Colors.green : Colors.white,
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Manual capture button
                 if (!_isCapturing)
                   GestureDetector(
                     onTap: _manualCapture,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 12,
+                        horizontal: 32,
+                        vertical: 14,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Text(
-                        "Capture Manually",
+                        "📷  Manually Capture",
                         style: GoogleFonts.poppins(
                           color: Colors.black,
                           fontWeight: FontWeight.w600,
@@ -574,32 +670,119 @@ class _CnicScannerScreenState extends State<CnicScannerScreen> {
 
   @override
   void dispose() {
+    _pulseController.dispose();
     _textRecognizer.close();
     _controller?.dispose();
     super.dispose();
   }
 }
 
-// Dark overlay with transparent center hole
-class _OverlayPainter extends CustomPainter {
+// Dark overlay with NIC-shaped transparent cutout
+class _NicOverlayPainter extends CustomPainter {
+  final double frameWidth;
+  final double frameHeight;
+
+  _NicOverlayPainter({required this.frameWidth, required this.frameHeight});
+
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black.withValues(alpha: 0.55);
-    final frameW = 320.0;
-    final frameH = 210.0;
-    final left = (size.width - frameW) / 2;
-    final top = (size.height - frameH) / 2;
+    final paint = Paint()..color = Colors.black.withOpacity(0.60);
+    final double left = (size.width - frameWidth) / 2;
+    final double top = (size.height - frameHeight) / 2;
+    final radius = const Radius.circular(12);
 
+    // Draw 4 dark rectangles around the transparent frame
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, top), paint);
     canvas.drawRect(
-      Rect.fromLTWH(0, top + frameH, size.width, size.height - top - frameH),
-      paint,
-    );
-    canvas.drawRect(Rect.fromLTWH(0, top, left, frameH), paint);
+        Rect.fromLTWH(0, top + frameHeight, size.width, size.height - top - frameHeight), paint);
+    canvas.drawRect(Rect.fromLTWH(0, top, left, frameHeight), paint);
     canvas.drawRect(
-      Rect.fromLTWH(left + frameW, top, size.width - left - frameW, frameH),
-      paint,
+        Rect.fromLTWH(left + frameWidth, top, size.width - left - frameWidth, frameHeight), paint);
+
+    // Clear the NIC frame area with rounded corners
+    final clearPaint = Paint()
+      ..blendMode = BlendMode.clear;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, top, frameWidth, frameHeight),
+        radius,
+      ),
+      clearPaint,
     );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Corner bracket painter (like professional scanner apps)
+class _CornerBracketPainter extends CustomPainter {
+  final Color color;
+  _CornerBracketPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    const double bracketLen = 28.0;
+    const double radius = 12.0;
+
+    // TOP LEFT
+    canvas.drawLine(
+        Offset(radius, 0), Offset(bracketLen, 0), paint);
+    canvas.drawArc(
+        Rect.fromLTWH(0, 0, radius * 2, radius * 2),
+        -3.14159 / 2 * 2, // 180 deg top
+        -3.14159 / 2,
+        false,
+        paint);
+    canvas.drawLine(
+        Offset(0, radius), Offset(0, bracketLen), paint);
+
+    // TOP RIGHT
+    canvas.drawLine(
+        Offset(size.width - bracketLen, 0), Offset(size.width - radius, 0), paint);
+    canvas.drawArc(
+        Rect.fromLTWH(size.width - radius * 2, 0, radius * 2, radius * 2),
+        -3.14159 / 2,
+        -3.14159 / 2,
+        false,
+        paint);
+    canvas.drawLine(
+        Offset(size.width, radius), Offset(size.width, bracketLen), paint);
+
+    // BOTTOM LEFT
+    canvas.drawLine(
+        Offset(0, size.height - bracketLen), Offset(0, size.height - radius), paint);
+    canvas.drawArc(
+        Rect.fromLTWH(0, size.height - radius * 2, radius * 2, radius * 2),
+        3.14159,
+        -3.14159 / 2,
+        false,
+        paint);
+    canvas.drawLine(
+        Offset(radius, size.height), Offset(bracketLen, size.height), paint);
+
+    // BOTTOM RIGHT
+    canvas.drawLine(
+        Offset(size.width, size.height - bracketLen),
+        Offset(size.width, size.height - radius),
+        paint);
+    canvas.drawArc(
+        Rect.fromLTWH(
+            size.width - radius * 2, size.height - radius * 2, radius * 2, radius * 2),
+        0,
+        -3.14159 / 2,
+        false,
+        paint);
+    canvas.drawLine(
+        Offset(size.width - bracketLen, size.height),
+        Offset(size.width - radius, size.height),
+        paint);
   }
 
   @override

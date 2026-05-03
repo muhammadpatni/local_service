@@ -376,7 +376,6 @@
 //     );
 //   }
 // }
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -389,10 +388,96 @@ import 'package:local_service/safety_page.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 import 'package:local_service/user_setting_page.dart';
 
-class UserDrawer extends StatelessWidget {
+class UserDrawer extends StatefulWidget {
   const UserDrawer({super.key});
 
+  @override
+  State<UserDrawer> createState() => _UserDrawerState();
+}
+
+class _UserDrawerState extends State<UserDrawer> {
   final Color primaryBlue = const Color(0xFF0E6BBB);
+  bool _isSwitching = false;
+
+  // Fixed: capture Navigator before async operations to avoid stale context
+  Future<void> _switchToProvider() async {
+    if (_isSwitching) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Capture navigator BEFORE any async gap
+    final navigator = Navigator.of(context);
+
+    setState(() => _isSwitching = true);
+
+    try {
+      // Close drawer first
+      navigator.pop();
+
+      // Now do async Firestore check
+      DocumentSnapshot providerDoc = await FirebaseFirestore.instance
+          .collection('providers')
+          .doc(user.uid)
+          .get();
+
+      if (providerDoc.exists) {
+        // Already a provider - update lastMode and navigate
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({'lastMode': 'provider'});
+
+        navigator.push(
+          MaterialPageRoute(builder: (_) => const ProviderHomeScreen()),
+        );
+      } else {
+        // New provider - go to setup screen
+        final String userData = user.email ?? user.phoneNumber ?? '';
+        navigator.push(
+          MaterialPageRoute(
+            builder: (_) => ProviderProfileSettingsScreen(
+              emailnumber: userData,
+              isSwitching: true,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Switch to Provider Error: $e");
+      // On error, go to setup screen anyway
+      final String userData = user.email ?? user.phoneNumber ?? '';
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => ProviderProfileSettingsScreen(
+            emailnumber: userData,
+            isSwitching: true,
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSwitching = false);
+    }
+  }
+
+  Future<void> _logout() async {
+    // Capture navigator before async
+    final navigator = Navigator.of(context);
+
+    try {
+      await FirebaseAuth.instance.signOut();
+      try {
+        await GoogleSignIn.instance.signOut();
+      } catch (_) {}
+    } catch (e) {
+      debugPrint("Logout error: $e");
+    } finally {
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -424,41 +509,30 @@ class UserDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const SafetyScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const SafetyScreen()),
                     );
                   }),
                   _buildMenuItem(Icons.settings_outlined, "Settings", () {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
                     );
                   }),
 
                   const SizedBox(height: 20),
 
-                  _buildMenuItem(Icons.logout, "Logout", () async {
-                    await FirebaseAuth.instance.signOut();
-                    await GoogleSignIn.instance.signOut();
-
-                    if (context.mounted) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    }
-                  }, isLogout: true),
+                  _buildMenuItem(
+                    Icons.logout,
+                    "Logout",
+                    _logout,
+                    isLogout: true,
+                  ),
                 ],
               ),
             ),
 
+            // Switch to Provider button
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
@@ -471,62 +545,18 @@ class UserDrawer extends StatelessWidget {
                     width: double.infinity,
                     height: 55,
                     decoration: BoxDecoration(
-                      color: primaryBlue,
+                      color: _isSwitching ? Colors.grey[400] : primaryBlue,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryBlue.withValues(alpha: 0.3),
+                          color: primaryBlue.withOpacity(0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
                       ],
                     ),
                     child: ElevatedButton(
-                      onPressed: () async {
-                        final user = FirebaseAuth.instance.currentUser;
-                        if (user == null) return;
-
-                        Navigator.pop(context); // Drawer band karo
-
-                        // Check karo agar already provider data exist karta hai
-                        DocumentSnapshot providerDoc = await FirebaseFirestore
-                            .instance
-                            .collection('providers')
-                            .doc(user.uid)
-                            .get();
-
-                        if (!context.mounted) return;
-
-                        if (providerDoc.exists) {
-                          // Seedha provider home par bhejo
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(user.uid)
-                              .update({'lastMode': 'provider'});
-
-                          if (!context.mounted) return;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ProviderHomeScreen(),
-                            ),
-                          );
-                        } else {
-                          // Provider setup shuru karo
-                          String userData =
-                              user.email ?? user.phoneNumber ?? '';
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ProviderProfileSettingsScreen(
-                                    emailnumber: userData,
-                                    isSwitching: true,
-                                  ),
-                            ),
-                          );
-                        }
-                      },
+                      onPressed: _isSwitching ? null : _switchToProvider,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,
@@ -535,13 +565,22 @@ class UserDrawer extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text(
-                        "Switch to Provider",
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: _isSwitching
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : Text(
+                              "Switch to Provider",
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
 
@@ -585,7 +624,7 @@ class UserDrawer extends StatelessWidget {
         String? imageUrl;
 
         if (snapshot.hasData && snapshot.data!.exists) {
-          var data = snapshot.data!.data() as Map<String, dynamic>;
+          final data = snapshot.data!.data() as Map<String, dynamic>;
           name = data['name'] ?? "No Name";
           imageUrl = data['profileImage'];
         }
@@ -596,7 +635,7 @@ class UserDrawer extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => UserProfileSettingsScreen(
+                builder: (_) => UserProfileSettingsScreen(
                   emailnumber: user?.email ?? user?.phoneNumber,
                   isEditMode: true,
                 ),
@@ -615,7 +654,7 @@ class UserDrawer extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     radius: 28,
-                    backgroundColor: primaryBlue.withValues(alpha: 0.1),
+                    backgroundColor: primaryBlue.withOpacity(0.1),
                     backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
                         ? NetworkImage(imageUrl)
                         : null,
@@ -665,9 +704,7 @@ class UserDrawer extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isLogout
-            ? Colors.red.withValues(alpha: 0.08)
-            : Colors.transparent,
+        color: isLogout ? Colors.red.withOpacity(0.08) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(

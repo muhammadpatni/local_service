@@ -357,7 +357,7 @@ class _ProviderDocumentScreenState extends State<ProviderDocumentScreen> {
     File frontImage,
     File backImage,
   ) async {
-    const String apiKey = "YOUR_GROQ_API_KEY"; // Apni Groq API key yahan
+    const String apiKey = ""; // Apni Groq API key yahan
     const String url = "https://api.groq.com/openai/v1/chat/completions";
 
     try {
