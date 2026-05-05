@@ -166,13 +166,15 @@
 //   }
 // }
 
-//
+// //
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_service/login_screen.dart';
 import 'package:local_service/provider_home_screen.dart';
+import 'package:local_service/provider_profile_setup_screen.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 
 class SelectionScreen extends StatefulWidget {
@@ -187,6 +189,7 @@ class _SelectionScreenState extends State<SelectionScreen> {
   final Color primaryBlue = const Color(0xFF0E6BBB);
   bool _isCheckingProvider = false;
 
+  // Back press par logout karke login screen par bhejo
   void _cancelAndLogout() async {
     await FirebaseAuth.instance.signOut();
     if (mounted) {
@@ -198,7 +201,7 @@ class _SelectionScreenState extends State<SelectionScreen> {
     }
   }
 
-  // Provider button tap - pehle check karo agar already provider hai
+  // Provider button tap — pehle check karo agar already provider hai
   Future<void> _onProviderTap() async {
     setState(() => _isCheckingProvider = true);
 
@@ -209,8 +212,8 @@ class _SelectionScreenState extends State<SelectionScreen> {
         return;
       }
 
-      // Check karo agar already provider ka data hai
-      DocumentSnapshot providerDoc = await FirebaseFirestore.instance
+      // Check karo agar already providers collection mein hai
+      final DocumentSnapshot providerDoc = await FirebaseFirestore.instance
           .collection('providers')
           .doc(user.uid)
           .get();
@@ -219,36 +222,60 @@ class _SelectionScreenState extends State<SelectionScreen> {
       setState(() => _isCheckingProvider = false);
 
       if (providerDoc.exists) {
-        // Already provider hai - direct provider home par bhejo
+        final pData = providerDoc.data() as Map<String, dynamic>;
+
         // lastMode update karo
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .update({'lastMode': 'provider'});
 
-        if (mounted) {
+        if (!mounted) return;
+
+        // Setup complete hai? Direct ProviderHomeScreen
+        if (pData['setupStep'] == 'complete' && pData['isVerified'] == true) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const ProviderHomeScreen()),
+            MaterialPageRoute(builder: (_) => const ProviderHomeScreen()),
             (route) => false,
+          );
+        } else {
+          // Setup adha reh gaya tha — wahan se continue karo
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ProviderProfileSetupScreen(),
+            ),
           );
         }
       } else {
-        // Naya provider - setup screen par bhejo
-        if (mounted) {}
+        // Naya provider — setup flow start karo
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ProviderProfileSetupScreen(),
+            ),
+          );
+        }
       }
     } catch (e) {
       debugPrint("Provider check error: $e");
       setState(() => _isCheckingProvider = false);
       // Error par bhi setup screen par bhejo
-      if (mounted) {}
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ProviderProfileSetupScreen()),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
-    final double textScale = MediaQuery.of(context).textScaleFactor;
+    final double textScaleFactor = MediaQuery.of(context).textScaler.scale(1.0);
 
     return PopScope(
       canPop: false,
@@ -282,11 +309,13 @@ class _SelectionScreenState extends State<SelectionScreen> {
                         child: IntrinsicHeight(
                           child: Column(
                             children: [
+                              // ─── Heading ───
                               Text(
                                 "Are you a user or a provider?",
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 24 * (textScale > 1.2 ? 0.9 : 1.0),
+                                  fontSize:
+                                      24 * (textScaleFactor > 1.2 ? 0.9 : 1.0),
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFF1A1A1A),
                                   height: 1.2,
@@ -304,6 +333,7 @@ class _SelectionScreenState extends State<SelectionScreen> {
 
                               SizedBox(height: screenHeight * 0.04),
 
+                              // ─── Illustration ───
                               Flexible(
                                 child: ConstrainedBox(
                                   constraints: BoxConstraints(
@@ -318,10 +348,12 @@ class _SelectionScreenState extends State<SelectionScreen> {
 
                               const SizedBox(height: 120),
 
+                              // ─── Buttons ───
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 20),
                                 child: Column(
                                   children: [
+                                    // User Button
                                     _buildButton(
                                       text: "I am a User",
                                       color: primaryBlue,
@@ -340,9 +372,14 @@ class _SelectionScreenState extends State<SelectionScreen> {
                                         );
                                       },
                                     ),
+
                                     const SizedBox(height: 16),
+
+                                    // Provider Button
                                     _buildButton(
-                                      text: "I am a Provider",
+                                      text: _isCheckingProvider
+                                          ? "Checking..."
+                                          : "I am a Provider",
                                       color: const Color(0xFFF1F4F8),
                                       textColor: Colors.black87,
                                       isBorder: false,
@@ -363,7 +400,7 @@ class _SelectionScreenState extends State<SelectionScreen> {
               ),
             ),
 
-            // Loading overlay for provider check
+            // Loading overlay
             if (_isCheckingProvider)
               Container(
                 color: Colors.black.withValues(alpha: 0.3),
