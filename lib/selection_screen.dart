@@ -173,7 +173,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_service/login_screen.dart';
 import 'package:local_service/provider_home_screen.dart';
-import 'package:local_service/provider_profile_setting_screen.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 
 class SelectionScreen extends StatefulWidget {
@@ -236,33 +235,13 @@ class _SelectionScreenState extends State<SelectionScreen> {
         }
       } else {
         // Naya provider - setup screen par bhejo
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProviderProfileSettingsScreen(
-                emailnumber: widget.emailcontact,
-                isSwitching: false,
-              ),
-            ),
-          );
-        }
+        if (mounted) {}
       }
     } catch (e) {
       debugPrint("Provider check error: $e");
       setState(() => _isCheckingProvider = false);
       // Error par bhi setup screen par bhejo
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProviderProfileSettingsScreen(
-              emailnumber: widget.emailcontact,
-              isSwitching: false,
-            ),
-          ),
-        );
-      }
+      if (mounted) {}
     }
   }
 

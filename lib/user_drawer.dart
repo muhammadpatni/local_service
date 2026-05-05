@@ -383,7 +383,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_service/login_screen.dart';
 import 'package:local_service/provider_home_screen.dart';
-import 'package:local_service/provider_profile_setting_screen.dart';
 import 'package:local_service/safety_page.dart';
 import 'package:local_service/user_profile_setting_screen.dart';
 import 'package:local_service/user_setting_page.dart';
@@ -434,27 +433,11 @@ class _UserDrawerState extends State<UserDrawer> {
       } else {
         // New provider - go to setup screen
         final String userData = user.email ?? user.phoneNumber ?? '';
-        navigator.push(
-          MaterialPageRoute(
-            builder: (_) => ProviderProfileSettingsScreen(
-              emailnumber: userData,
-              isSwitching: true,
-            ),
-          ),
-        );
       }
     } catch (e) {
       debugPrint("Switch to Provider Error: $e");
       // On error, go to setup screen anyway
       final String userData = user.email ?? user.phoneNumber ?? '';
-      navigator.push(
-        MaterialPageRoute(
-          builder: (_) => ProviderProfileSettingsScreen(
-            emailnumber: userData,
-            isSwitching: true,
-          ),
-        ),
-      );
     } finally {
       if (mounted) setState(() => _isSwitching = false);
     }
