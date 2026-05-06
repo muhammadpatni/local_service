@@ -28,7 +28,7 @@ class _ProviderFaceVerificationScreenState
 
   // ⚠️ Yahan apni actual Gemini API Key lagao
   // Google AI Studio: https://aistudio.google.com/app/apikey
-  static const String _geminiApiKey = 'AIzaSyBf6inbo1GqCIWtaF81gGuUyPOAv3A4Qz0';
+  static const String _geminiApiKey = '';
 
   CameraController? _cameraCtrl;
   bool _isCameraReady = false;
